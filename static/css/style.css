@@ -1,0 +1,256 @@
+/* === Google Fonts === */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+
+/* === Palet Warna (Bagus & Soft) === */
+:root {
+    --soft-pink: #FCE4EC; /* Background utama - Pink Sangat Muda */
+    --soft-blue: #E3F2FD; /* Biru muda untuk card/jumbotron */
+    --navbar-blue: #B3E5FC; /* Biru Navbar */
+    --accent-color: #0288D1; /* Biru tua untuk tombol & link */
+    --success-color: #4CAF50; /* Hijau untuk 'Benar' */
+    --danger-color: #F44336; /* Merah untuk 'Salah' */
+    --text-dark: #263238;
+    --card-bg: #ffffff;
+}
+
+/* === Animasi Keyframes === */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* === Kelas Animasi === */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-pop-in {
+    animation: popIn 0.3s ease-out forwards;
+}
+
+/* === Global Style === */
+body {
+    background-color: var(--soft-pink); 
+    font-family: 'Poppins', 'Arial', sans-serif;
+    color: var(--text-dark);
+}
+
+/* === Navbar === */
+.navbar.bg-custom-blue {
+    background-color: var(--navbar-blue);
+    border-bottom: 2px solid #81D4FA;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.navbar.bg-custom-blue .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+.navbar.bg-custom-blue .nav-link {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+.navbar.bg-custom-blue .nav-link:hover,
+.navbar.bg-custom-blue .nav-link.active {
+    color: var(--accent-color);
+}
+
+/* === Tombol (Button) === */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+.btn-primary:hover {
+    background-color: #0277BD;
+    border-color: #0277BD;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.btn-success { background-color: var(--success-color); border-color: var(--success-color); }
+.btn-danger { background-color: var(--danger-color); border-color: var(--danger-color); }
+.btn-info { background-color: #00BCD4; border-color: #00BCD4; }
+
+/* === Kartu (Card) === */
+.card {
+    background-color: var(--card-bg);
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.card-header {
+    background-color: var(--soft-blue);
+    border-bottom: 2px solid #BBDEFB;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+.card-header h3, .card-header h5 {
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+/* === Jumbotron (Homepage) === */
+.jumbotron-custom {
+    background-color: var(--soft-blue);
+    border-radius: 12px;
+    border: 2px solid #BBDEFB;
+}
+
+/* === Adventure Game: Level Select === */
+.level-card {
+    background-color: var(--soft-blue);
+    border: 2px solid var(--navbar-blue);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--text-dark);
+}
+.level-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+.level-card .card-body {
+    text-align: center;
+}
+
+/* === Adventure Game: Halaman Game === */
+.card-question {
+    background-color: var(--soft-blue);
+    border-radius: 8px;
+    border-left: 5px solid var(--navbar-blue);
+}
+
+/* === Sudoku Grid === */
+.sudoku-grid {
+    display: grid;
+    border: 3px solid #546E7A;
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.sudoku-grid.grid-4x4 { grid-template-columns: repeat(4, 50px); grid-template-rows: repeat(4, 50px); width: 206px; }
+.sudoku-grid.grid-6x6 { grid-template-columns: repeat(6, 45px); grid-template-rows: repeat(6, 45px); width: 276px; }
+.sudoku-cell {
+    width: 100%; height: 100%;
+    text-align: center; font-size: 1.5rem;
+    border: 1px solid #CFD8DC;
+    box-sizing: border-box;
+}
+.sudoku-cell input {
+    width: 100%; height: 100%; border: none; text-align: center;
+    font-size: 1.5rem; padding: 0; box-sizing: border-box;
+    color: var(--accent-color); font-weight: 500;
+    -moz-appearance: textfield;
+}
+.sudoku-cell input:focus {
+    outline: 2px solid var(--accent-color);
+    background-color: #E3F2FD;
+}
+.sudoku-cell input::-webkit-outer-spin-button,
+.sudoku-cell input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+}
+.sudoku-cell.given {
+    background-color: #ECEFF1;
+    color: #37474F;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+}
+.sudoku-cell.box-right { border-right: 2px solid #78909C; }
+.sudoku-cell.box-bottom { border-bottom: 2px solid #78909C; }
+
+/* === Achievement Pop-up (Toast) === */
+.achievement-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1100;
+    min-width: 300px;
+    background-color: #2c3e50;
+    color: white;
+    border-radius: 8px;
+    border: 2px solid #1abc9c;
+}
+.achievement-toast .toast-header {
+    background-color: #1abc9c;
+    color: white;
+    font-weight: 700;
+    border-bottom: 0;
+}
+.achievement-toast .toast-body {
+    font-weight: 500;
+}
+
+/* === Animasi & Feedback Box untuk Logic Game === */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-out;
+}
+
+.feedback-box {
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 15px;
+}
+.feedback-correct {
+  background-color: #D4EDDA; /* Hijau muda */
+  color: #155724; /* Hijau tua */
+  border: 1px solid #C3E6CB;
+}
+.feedback-incorrect {
+  background-color: #F8D7DA; /* Merah muda */
+  color: #721C24; /* Merah tua */
+  border: 1px solid #F5C6CB;
+}
+
+/* === Adventure Game: Modal Transisi Level === */
+.level-intro-modal .modal-content {
+    background-color: var(--soft-blue);
+    border: 3px solid var(--accent-color);
+}
+.level-intro-modal .modal-title {
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+/* === Adventure Game: Layar Game Over === */
+#game-over-screen {
+    background-color: var(--soft-blue);
+    border-radius: 8px;
+    padding: 20px;
+}
+/* === TAMBAHAN FIX STUCK (Versi Final) === */
+
+/* 1. Sembunyikan backdrop (lapisan abu-abu) yang bikin macet */
+.modal-backdrop {
+    display: none !important; 
+}
+
+/* 2. Paksa modal agar bisa di-scroll 
+   jika layarnya terlalu pendek (HP/laptop kecil)
+*/
+.level-intro-modal .modal-content {
+    max-height: 80vh; /* Maksimal tinggi modal adalah 80% dari layar */
+    overflow-y: auto; /* Tambahkan scroll JIKA kontennya lebih panjang */
+}

@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block title %}Pattern Challenge{% endblock %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width: 600px;">
+    <div class="card-body text-center p-4">
+        <h1 class="animate-pop-in" style="font-size: 4rem;">📈</h1>
+        <h2 class="card-title">Pattern Challenge</h2>
+        <p class="fs-5 mt-3">
+            Uji kemampuanmu mengenali pola!
+            <br>
+            Kamu akan diberi 10 soal deret angka acak dari bank soal kami.
+            <br>
+            Siap mulai?
+        </p>
+        <a href="/play_patterns" class="btn btn-primary btn-lg mt-3">
+            <i class="bi bi-play-fill"></i> Ya, Aku Siap!
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

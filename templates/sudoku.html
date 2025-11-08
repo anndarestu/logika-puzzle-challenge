@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+{% block title %}Sudoku Challenge{% endblock %}
+{% block content %}
+<h2 class="text-center"><i class="bi bi-grid-3x3-gap-fill"></i> Sudoku Challenge</h2>
+<p class="text-center">Pilih ukuran board:</p>
+<div class="text-center mb-3">
+    <button class="btn btn-primary" id="btn-4x4">Sudoku 4x4</button>
+    <button class="btn btn-primary" id="btn-6x6">Sudoku 6x6</button>
+</div>
+<div class="d-flex justify-content-center">
+    <div id="sudoku-container"></div>
+</div>
+<div class="text-center mt-3">
+    <button class="btn btn-success" id="btn-check-sudoku">
+        <i class="bi bi-check-lg"></i> Cek Jawaban
+    </button>
+    <p id="sudoku-feedback" class="mt-2 fw-bold"></p>
+</div>
+<script> const sudokuBoards = {{ boards | tojson }}; </script>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sudoku.js') }}"></script>
+{% endblock %}

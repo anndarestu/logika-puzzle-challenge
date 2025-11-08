@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <div class="p-5 mb-4 rounded-3 jumbotron-custom">
+        <div class="container-fluid py-4">
+            <h1 class="display-5 fw-bold">Selamat Datang di LOGIKA! 🚀</h1>
+            <p class="fs-4">Math Puzzle Challenge oleh Kelompok 5</p>
+            <p>Silakan pilih mode permainan yang ingin kamu mainkan di bawah ini.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <a href="/pilih_level" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">🪄</h1>
+                        <h3>Petualangan Logika</h3>
+                        <p>Ikuti cerita dan taklukkan 3 level teka-teki (Mudah, Sedang, Sukar).</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="/sudoku" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">🧩</h1>
+                        <h3>Sudoku Challenge</h3>
+                        <p>Uji logikamu dengan papan Sudoku 4x4 dan 6x6.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="/patterns" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">📈</h1>
+                        <h3>Tebak Pola</h3>
+                        <p>Temukan angka selanjutnya dari deret yang menantang.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6">
+            <a href="/multiplayer" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">👥</h1>
+                        <h3>Logic Race (Lokal)</h3>
+                        <p>Adu cepat logika bersama temanmu di satu perangkat.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-people-fill"></i> Tim Kami (Kelompok 5)</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Nama Aplikasi:</strong> {{ group_info.aplikasi }}</p>
+                    <p><strong>Institusi:</strong> {{ group_info.institusi }}</p>
+                    <p><strong>Anggota:</strong></p>
+                    <ul>
+                        {% for member in group_info.anggota %}
+                        <li>{{ member.nama }} (NIM: {{ member.nim }})</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{{ group_info.repository }}" class="btn btn-dark" target="_blank">
+                        <i class="bi bi-github"></i> Lihat Repository GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

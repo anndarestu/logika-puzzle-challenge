@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block title %}Mulai Petualangan{% endblock %}
+
+{% block content %}
+<div class="card mx-auto" style="max-width: 600px;">
+    <div class="card-body text-center p-4">
+        <h1 class="animate-pop-in" style="font-size: 4rem;">🪄</h1>
+        <h2 class="card-title">Petualangan Logika Cici</h2>
+        <p class="fs-5 mt-3">
+            “Selamat datang di Petualangan Logika Cici!
+            <br>
+            Setiap jawaban benar membuka pintu menuju dunia pengetahuan.
+            <br>
+            Apakah kamu siap memulai?”
+        </p>
+        <a href="/play_adventure" class="btn btn-primary btn-lg mt-3">
+            <i class="bi bi-play-fill"></i> Ya, Aku Siap!
+        </a>
+    </div>
+</div>
+{% endblock %}

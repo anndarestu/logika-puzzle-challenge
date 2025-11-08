@@ -1,0 +1,64 @@
+{% extends 'layout.html' %}
+{% block title %}Pattern Challenge{% endblock %}
+
+{% block content %}
+<div id="game-container" class="card mx-auto" style="max-width: 700px;">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Skor: <span id="score-display" class="badge bg-success">0</span></h5>
+        <h5 class="mb-0 text-capitalize">Pattern Challenge</h5>
+        <h5 class="mb-0">Soal <span id="question-counter">1</span> / 10</h5>
+    </div>
+
+    <div class="card-body" id="game-body">
+
+        <div class="card-question p-3 mb-3">
+            <p class="fs-4 text-center my-3" id="question-text">Memuat pertanyaan... <strong>?</strong></p>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Ketik jawabanmu..." id="answer-input">
+            <button class="btn btn-primary" type="button" id="check-btn">
+                <i class="bi bi-check-lg"></i> Kirim Jawaban
+            </button>
+        </div>
+
+        <div id="feedback-box"></div>
+        <hr>
+
+        <div class="d-flex justify-content-start gap-2">
+            <button class="btn btn-secondary" id="hint-btn">
+                <i class="bi bi-search"></i> Petunjuk
+            </button>
+            <button class="btn btn-danger" id="solution-btn" style="display: none;">
+                <i class="bi bi-eye-fill"></i> Lihat Penyelesaian
+            </button>
+        </div>
+        <div id="support-box" class="mt-3"></div>
+    </div>
+
+    <div class="card-footer text-center" id="controls-footer" style="display: none;">
+        <button class="btn btn-info text-dark" id="next-btn">Soal Selanjutnya <i class="bi bi-arrow-right"></i></button>
+    </div>
+
+    <div id="game-over-screen" class="card-body text-center" style="display: none;">
+        <h1 class="my-3" id="final-emoji-text">🏆</h1>
+        <h2 class="animate-pop-in" id="final-title-text">Pattern Challenge Selesai!</h2>
+        <h3 id="final-score-text" class="text-success my-3"></h3>
+        <p id="evaluation-text" class="fs-5"></p>
+        <button class="btn btn-primary" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise"></i> Main Lagi
+        </button>
+        <a href="/patterns" class="btn btn-secondary">
+            <i class="bi bi-list-ul"></i> Kembali ke Menu
+        </a>
+    </div>
+
+</div>
+
+<script> const patternGames = {{ games | tojson }}; </script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pattern_game_logic.js') }}"></script>
+{% endblock %}

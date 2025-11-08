@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+{% block title %}Pilih Level Petualangan{% endblock %}
+
+{% block content %}
+<div class="container text-center" style="max-width: 700px;">
+    <div class="card">
+        <div class="card-body p-4">
+            <h1 class="animate-pop-in" style="font-size: 4rem;">🪄</h1>
+            <h2 class="card-title">Petualangan Logika 🏰🧠</h2>
+            <p class="fs-5 mt-3">
+                Pilih level teka-teki yang ingin kamu taklukkan!
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-3">
+        
+        <div class="col-md-4">
+            <a href="/play_adventure?level=mudah" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">🌱</h1>
+                        <h3>Level Mudah</h3>
+                        <p>Dasar-dasar logika dan pola sederhana.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/play_adventure?level=sedang" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">🔮</h1>
+                        <h3>Level Sedang</h3>
+                        <p>Teka-teki fungsi, deret, dan logika.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="/play_adventure?level=sukar" class="text-decoration-none">
+                <div class="card level-card h-100">
+                    <div class="card-body p-4">
+                        <h1 style="font-size: 3rem;">🔥</h1>
+                        <h3>Level Sukar</h3>
+                        <p>Persamaan rumit dan logika abstrak.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
