@@ -4,18 +4,26 @@ from flask import Flask, render_template, jsonify
 import qrcode
 from io import BytesIO
 import base64
+import os  
 # ---------------------------------
 
 app = Flask(__name__)
 
-# Load data teka-teki dari file JSON
+# Path tempat file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 1. Fungsi untuk file JSON
 def load_puzzles():
-    with open('puzzles.json', 'r', encoding='utf-8') as f:
+    json_path = os.path.join(BASE_DIR, 'puzzles.json')
+    with open(json_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
+# 2. Variabel PUZZLE_DATA
 PUZZLE_DATA = load_puzzles()
+# ===================================================
 
-# Informasi Kelompok 
+
+# Informasi Kelompok (Lengkap)
 GROUP_INFO = {
     "nama_kelompok": "5",
     "aplikasi": "LOGIKA",
@@ -25,18 +33,18 @@ GROUP_INFO = {
         {"nama": "Nur Fitri", "nim": "240210101154"}
     ],
     "institusi": "Pendidikan Matematika, FKIP, Universitas Jember",
-    "repository": "https.github.com/anndarestu/logika-puzzle-challenge"
+    "repository": "https://github.com/anndarestu/logika-puzzle-challenge"
 }
 
 # === KONFIGURASI WARNA TEMA (dari style.css) ===
-THEME_COLOR_PRIMARY = "#0288D1" 
-THEME_COLOR_ACCENT = "#E3F2FD" 
+THEME_COLOR_PRIMARY = "#0288D1"
+THEME_COLOR_ACCENT = "#E3F2FD"
 
-# === FUNGSI GENERATE QR  ===
+# === FUNGSI GENERATE QR ===
 def generate_qr(data: dict):
     """Menghasilkan QR Code dalam format Base64."""
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
-
+    
     data_str = f"Aplikasi: {data['aplikasi']}\n"
     data_str += f"Universitas: {data['institusi']}\nAnggota:\n"
     for member in data['anggota']:
@@ -53,7 +61,7 @@ def generate_qr(data: dict):
     img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
     return img_base64
 
-# === FUNGSI BARU (CONTEXT PROCESSOR) ===
+# === FUNGSI (CONTEXT PROCESSOR) ===
 @app.context_processor
 def inject_global_vars():
     """Menyuntikkan variabel ke semua template."""
@@ -66,15 +74,15 @@ def inject_global_vars():
     )
 
 # ========================================================
-# === RUTE-RUTE APLIKASI KITA
+# === RUTE-RUTE APLIKASI
 # ========================================================
 
-# === RUTE HALAMAN UTAMA ===
+# === RUTE HALAMAN UTAMA (MENU) ===
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# === RUTE PETUALANGAN LOGIKA ===
+# === RUTE PETUALANGAN LOGIKA (PILIH LEVEL) ===
 @app.route('/pilih_level')
 def pilih_level():
     return render_template('pilih_level.html')
@@ -87,12 +95,12 @@ def play_adventure():
 def api_get_adventure_puzzles():
     return jsonify(PUZZLE_DATA.get('adventure_puzzles', {}))
 
-# === RUTE SUDOKU ===
+# === RUTE SUDOKU (ACAK) ===
 @app.route('/sudoku')
 def sudoku():
     return render_template('sudoku.html', boards=PUZZLE_DATA.get('sudoku_boards', {}))
 
-# === RUTE PATTERN GAME ===
+# === RUTE PATTERN GAME (10 SOAL) ===
 @app.route('/patterns')
 def patterns_start():
     return render_template('pattern.html')
@@ -110,7 +118,7 @@ def create_puzzle():
 def play_custom():
     return render_template('play_custom.html')
 
-# === RUTE MULTIPLAYER ===
+# === RUTE MULTIPLAYER (SPLIT-SCREEN) ===
 @app.route('/multiplayer')
 def multiplayer():
     bank_p1 = PUZZLE_DATA.get('multiplayer_puzzles', {}).get('player_1_bank', [])
@@ -118,19 +126,16 @@ def multiplayer():
 
     GAME_SIZE = 15
 
-    # Acak 15 soal untuk Player 1
     if len(bank_p1) < GAME_SIZE:
-        puzzles_p1 = random.sample(bank_p1, len(bank_p1)) 
+        puzzles_p1 = random.sample(bank_p1, len(bank_p1))
     else:
         puzzles_p1 = random.sample(bank_p1, GAME_SIZE)
 
-    # Acak 15 soal untuk Player 2
     if len(bank_p2) < GAME_SIZE:
-        puzzles_p2 = random.sample(bank_p2, len(bank_p2)) 
+        puzzles_p2 = random.sample(bank_p2, len(bank_p2))
     else:
         puzzles_p2 = random.sample(bank_p2, GAME_SIZE)
 
-    # Kirim DUA set soal ke template
     return render_template('multiplayer.html', puzzles_p1=puzzles_p1, puzzles_p2=puzzles_p2)
 
 # Jalankan aplikasi
