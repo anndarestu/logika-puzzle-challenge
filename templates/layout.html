@@ -45,6 +45,12 @@
                             <li><a class="dropdown-item" href="/play_custom"><i class="bi bi-joystick"></i> Mainkan Puzzle Custom</a></li>
                         </ul>
                     </li>
+
+                    <li class="nav-item d-flex align-items-center">
+                        <button id="btn-music" class="btn btn-link nav-link text-white px-2" title="Musik Latar"><i id="icon-music" class="bi bi-volume-mute-fill"></i></button>
+                        <button id="btn-sfx" class="btn btn-link nav-link text-white px-2" title="Efek Suara"><i id="icon-sfx" class="bi bi-volume-up-fill"></i></button>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#qrModal">
                             <i class="bi bi-qr-code"></i> Info Kelompok
@@ -67,32 +73,87 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Info Kelompok 5: LOGIKA 🧩</h5>
+                    <h5 class="modal-title"><i class="bi bi-info-circle-fill"></i> Info Kelompok 5</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body text-center animate-pop-in">
+                    {% if qr_code_kelompok %}
+                        <img src="data:image/png;base64,{{ qr_code_kelompok }}" class="img-fluid mb-3" style="max-width: 250px; border-radius: 8px;">
+                    {% else %}
+                        <p class="text-muted">(QR Code tidak tersedia di mode aman)</p>
+                    {% endif %}
                     
-                    <img src="data:image/png;base64,{{ qr_code_kelompok }}"
-                         alt="QR Code Kelompok 5"
-                         class="img-fluid mb-3"
-                         style="max-width: 250px; border-radius: 8px; background-color: var(--soft-blue);">
-
                     <h6>Anggota Tim:</h6>
-                    
                     <ul class="list-unstyled">
                         {% for member in group_info.anggota %}
-                            <li> 💻  {{ member.nama }} ({{ member.nim }})</li>
+                            <li> 💻 {{ member.nama }} ({{ member.nim }})</li>
                         {% endfor %}
                     </ul>
-                    
-                    <p><small>{{ group_info.institusi }}</small></p>
-
                 </div>
             </div>
         </div>
     </div>
+
+    <audio id="bg-music" loop><source src="{{ url_for('static', filename='sounds/music.mp3') }}" type="audio/mpeg"></audio>
+    <audio id="audio-benar" src="{{ url_for('static', filename='sounds/benar.mp3') }}"></audio>
+    <audio id="audio-salah" src="{{ url_for('static', filename='sounds/salah.mp3') }}"></audio>
+    <audio id="audio-win" src="{{ url_for('static', filename='sounds/win.mp3') }}"></audio>
+
+    <script>
+        let isSfxEnabled = localStorage.getItem('sfxEnabled') !== 'false';
+        function playSound(type) {
+            if (!isSfxEnabled) return;
+            const audio = document.getElementById('audio-' + type);
+            if (audio) { audio.currentTime = 0; audio.play().catch(e => console.log(e)); }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Logic Musik
+            const music = document.getElementById('bg-music');
+            const btnMusic = document.getElementById('btn-music');
+            const iconMusic = document.getElementById('icon-music');
+            music.volume = 0.3;
+            
+            if (localStorage.getItem('musicPlaying') === 'true') {
+                iconMusic.className = 'bi bi-music-note-beamed';
+                const savedTime = parseFloat(localStorage.getItem('musicTime'));
+                if (!isNaN(savedTime)) music.currentTime = savedTime;
+                music.play().catch(e => console.log("Autoplay blocked"));
+            }
+
+            window.addEventListener("beforeunload", () => localStorage.setItem('musicTime', music.currentTime));
+
+            btnMusic.addEventListener('click', () => {
+                if (music.paused) {
+                    music.play();
+                    iconMusic.className = 'bi bi-music-note-beamed';
+                    localStorage.setItem('musicPlaying', 'true');
+                } else {
+                    music.pause();
+                    iconMusic.className = 'bi bi-volume-mute-fill';
+                    localStorage.setItem('musicPlaying', 'false');
+                }
+            });
+
+            // Logic SFX
+            const btnSfx = document.getElementById('btn-sfx');
+            const iconSfx = document.getElementById('icon-sfx');
+            if (!isSfxEnabled) { iconSfx.className = 'bi bi-volume-mute'; btnSfx.classList.add('text-secondary'); }
+            
+            btnSfx.addEventListener('click', () => {
+                isSfxEnabled = !isSfxEnabled;
+                localStorage.setItem('sfxEnabled', isSfxEnabled);
+                if (isSfxEnabled) {
+                    iconSfx.className = 'bi bi-volume-up-fill';
+                    btnSfx.classList.remove('text-secondary');
+                    playSound('benar');
+                } else {
+                    iconSfx.className = 'bi bi-volume-mute';
+                    btnSfx.classList.add('text-secondary');
+                }
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
