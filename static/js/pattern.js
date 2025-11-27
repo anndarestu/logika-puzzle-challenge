@@ -1,136 +1,117 @@
-// File: static/js/pattern.js
-// (VERSI REVISI 3 - DENGAN TOMBOL SOLUSI)
-
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof window.mathPuzzle === 'undefined') {
-        console.error('Peringatan: main.js belum di-load. Achievement tidak akan berfungsi.');
-    }
-    const container = document.getElementById('pattern-container');
-    const bankBtn = document.getElementById('btn-next-pattern');
-    const randomBtn = document.getElementById('btn-random-pattern');
-    let currentGameData = {}; // Simpan data game saat ini
-
-    if (typeof patternGames === 'undefined' || patternGames.length === 0) {
-        container.innerHTML = '<p class="text-center">Belum ada soal pattern di puzzles.json.</p>';
-        bankBtn.disabled = true;
-        randomBtn.disabled = true;
-        return;
+    
+    // Fungsi Helper Suara
+    function playSoundEffect(type) {
+        if (typeof playSound === 'function') {
+            playSound(type);
+        }
     }
 
-    bankBtn.innerHTML = '<i class="bi bi-bank"></i> Soal Acak (dari Bank Soal)';
+    // === 1. DEKLARASI ELEMEN ===
+    const scoreDisplay = document.getElementById('score-display');
+    const questionCounter = document.getElementById('question-counter');
+    const questionText = document.getElementById('question-text');
+    const answerInput = document.getElementById('answer-input');
+    const checkBtn = document.getElementById('check-btn');
+    const feedbackBox = document.getElementById('feedback-box');
+    const hintBtn = document.getElementById('hint-btn');
+    const solutionBtn = document.getElementById('solution-btn');
+    const supportBox = document.getElementById('support-box');
+    const controlsFooter = document.getElementById('controls-footer');
+    const nextBtn = document.getElementById('next-btn');
+    const gameBody = document.getElementById('game-body');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const finalScoreText = document.getElementById('final-score-text');
+    const evaluationText = document.getElementById('evaluation-text');
 
-    function loadRandomGameFromBank() {
-        if (patternGames.length === 0) return;
-        const randomIndex = Math.floor(Math.random() * patternGames.length);
-        const game = patternGames[randomIndex];
+    // === 2. STATE GAME ===
+    let gameSet = []; 
+    let currentQuestionIndex = 0;
+    let totalScore = 0;
+    let isAnswered = false;
+
+    // === 3. FUNGSI INTI GAME ===
+
+    function shuffleArray(array) {
+        let newArr = [...array];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        }
+        return newArr;
+    }
+
+    function initGame() {
+        if (typeof patternGames === 'undefined' || patternGames.length === 0) {
+            questionText.textContent = 'Error: Gagal memuat bank soal pattern.';
+            return;
+        }
+        // Ambil 10 soal acak
+        gameSet = shuffleArray(patternGames).slice(0, 10);
         
-        // Simpan data game saat ini
-        currentGameData = {
-            id: `JSON-${game.id}`,
-            title: `Tebak Pola! (Soal #${game.id})`,
-            sequence: game.sequence.join(', '),
-            hint: game.hint,
-            correctAnswer: String(game.next),
-            solution: game.solution || "Solusi tidak tersedia." // Ambil data solusi
-        };
-        displayGame(currentGameData);
+        if (gameSet.length === 0) {
+             questionText.textContent = 'Error: Tidak ada soal di gameSet.';
+             return;
+        }
+        currentQuestionIndex = 0;
+        totalScore = 0;
+        displayQuestion();
     }
 
-    // Fungsi ini membuat soal acak secara "prosedural"
-    function generateRandomPattern() {
-        const rules = [
-            { type: 'Aritmatika (+)', fn: () => {
-                let start = randInt(1, 10); let diff = randInt(2, 5);
-                let seq = [start];
-                for (let i = 0; i < 4; i++) seq.push(seq[i] + diff);
-                let answer = seq[4] + diff;
-                return { sequence: seq.join(', '), correctAnswer: String(answer), hint: `Ini adalah deret Aritmatika. (Pola +${diff})`, solution: `Polanya adalah +${diff}. Angka terakhir ${seq[4]} + ${diff} = ${answer}.` };
-            }},
-            { type: 'Geometri (x)', fn: () => {
-                let start = randInt(1, 3); let multi = randInt(2, 4);
-                let seq = [start];
-                for (let i = 0; i < 4; i++) seq.push(seq[i] * multi);
-                let answer = seq[4] * multi;
-                return { sequence: seq.join(', '), correctAnswer: String(answer), hint: `Ini adalah deret Geometri. (Pola x${multi})`, solution: `Polanya adalah x${multi}. Angka terakhir ${seq[4]} * ${multi} = ${answer}.` };
-            }},
-            { type: 'Kuadrat', fn: () => {
-                let start = randInt(1, 5); let seq = [];
-                for (let i = 0; i < 5; i++) seq.push((start + i) * (start + i));
-                let answer = (start + 5) * (start + 5);
-                return { sequence: seq.join(', '), correctAnswer: String(answer), hint: 'Ini adalah deret bilangan kuadrat (n^2).', solution: `Polanya adalah (n+${start-1})^2. Angka selanjutnya adalah (${start+5})^2 = ${answer}.` };
-            }}
-        ];
-        const rule = rules[randInt(0, rules.length - 1)];
-        const game = rule.fn();
-        
-        // Simpan data game saat ini
-        currentGameData = {
-            id: `PROC-${Date.now()}`,
-            title: `Puzzle Acak! (${rule.type})`,
-            sequence: game.sequence,
-            hint: game.hint,
-            correctAnswer: game.correctAnswer,
-            solution: game.solution
-        };
-        displayGame(currentGameData);
+    function displayQuestion() {
+        isAnswered = false;
+        const puzzle = gameSet[currentQuestionIndex];
+        questionText.innerHTML = `${puzzle.sequence.join(', ')}, <strong>?</strong>`;
+        questionCounter.textContent = `${currentQuestionIndex + 1}`;
+        scoreDisplay.textContent = totalScore;
+        answerInput.value = '';
+        answerInput.disabled = false;
+        checkBtn.disabled = false;
+        feedbackBox.innerHTML = '';
+        supportBox.innerHTML = '';
+        solutionBtn.style.display = 'none';
+        controlsFooter.style.display = 'none';
     }
 
-    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function checkAnswer() {
+        if (isAnswered) return;
 
-    // Fungsi ini menampilkan game ke layar
-    function displayGame(gameData) {
-        container.innerHTML = `
-        <div class="card mx-auto animate-pop-in" style="max-width: 600px;">
-            <div class="card-header"> <h5>${gameData.title}</h5> </div>
-            <div class="card-body">
-                <p class="fs-4 text-center my-3">${gameData.sequence}, <strong>?</strong></p>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="pattern-answer" placeholder="Jawabanmu">
-                    <button class="btn btn-success" id="btn-check-pattern"> <i class="bi bi-check-lg"></i> Cek </button>
-                </div>
-                <div id="pattern-feedback" class="mt-2"></div>
-                
-                <div class="d-flex justify-content-start gap-2">
-                    <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#hint-collapse">
-                        <i class="bi bi-search"></i> Petunjuk
-                    </button>
-                    <button class="btn btn-sm btn-danger" id="btn-solution-pattern" style="display: none;">
-                        <i class="bi bi-eye-fill"></i> Lihat Penyelesaian
-                    </button>
-                </div>
-                <div class="collapse mt-2" id="hint-collapse">
-                    <div class="card card-body" style="background-color: var(--soft-pink);">${gameData.hint}</div>
-                </div>
-                <div id="pattern-solution-box" class="mt-3"></div>
-                </div>
-        </div>`;
+        const puzzle = gameSet[currentQuestionIndex];
+        const userAnswer = answerInput.value.trim().toLowerCase();
+
+        if (userAnswer === "") {
+            // SUARA SALAH (Input Kosong)
+            playSoundEffect('salah');
+            feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> Jawaban tidak boleh kosong!</div>`;
+            return;
+        }
         
-        // Listener untuk tombol Cek
-        document.getElementById('btn-check-pattern').addEventListener('click', () => {
-            checkPatternAnswer(gameData.correctAnswer);
-        });
+        // Cek Jawaban 
+        const correctAnswerData = puzzle.next; 
+        let isCorrect = false;
 
-        // Listener BARU untuk tombol Solusi
-        document.getElementById('btn-solution-pattern').addEventListener('click', () => {
-            const solutionBox = document.getElementById('pattern-solution-box');
-            solutionBox.innerHTML = `<div class="alert alert-warning animate-pop-in"><strong>Penyelesaian:</strong> ${currentGameData.solution}</div>`;
-        });
-    }
-
-    // Fungsi cek jawaban
-    function checkPatternAnswer(correctAnswer) {
-        const answer = document.getElementById('pattern-answer').value.trim();
-        const feedback = document.getElementById('pattern-feedback');
+        if (Array.isArray(correctAnswerData)) {
+            const correctAnswers = correctAnswerData.map(ans => String(ans).toLowerCase());
+            isCorrect = correctAnswers.includes(userAnswer);
+        } else {
+            const correctAnswer = (correctAnswerData || '').toString().toLowerCase();
+            isCorrect = (userAnswer === correctAnswer);
+        }
         
-        // === KODE BARU: Tampilkan tombol solusi ===
-        document.getElementById('btn-solution-pattern').style.display = 'inline-block';
-        // Matikan input setelah dijawab
-        document.getElementById('pattern-answer').disabled = true;
-        document.getElementById('btn-check-pattern').disabled = true;
-        // ======================================
+        isAnswered = true;
+        answerInput.disabled = true;
+        checkBtn.disabled = true;
+        controlsFooter.style.display = 'block';
+        solutionBtn.style.display = 'inline-block';
 
-        if (answer.toLowerCase() === correctAnswer.toLowerCase()) {
-            feedback.innerHTML = `<div class="alert alert-success d-flex align-items-center animate-pop-in" role="alert"> <i class="bi bi-check-circle-fill me-2"></i> <div><strong>Benar!</strong></div> </div>`;
+        if (isCorrect) {
+            // === SUARA BENAR ===
+            playSoundEffect('benar');
+
+            totalScore += 10;
+            scoreDisplay.textContent = totalScore;
+            feedbackBox.innerHTML = `<div class="feedback-box feedback-correct animate-pop-in"><i class="bi bi-check-circle-fill"></i> <strong>Benar!</strong> +10 Poin!</div>`;
+            
             if (window.mathPuzzle) {
                 let progress = window.mathPuzzle.getProgress();
                 progress.solved_pattern += 1;
@@ -138,14 +119,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(progress.solved_pattern >= 1) window.mathPuzzle.unlockAchievement('PATTERN_1');
             }
         } else {
-            feedback.innerHTML = `<div class="alert alert-danger d-flex align-items-center animate-pop-in" role="alert"> <i class="bi bi-x-circle-fill me-2"></i> <div><strong>Oops!</strong> Coba lagi!</div> </div>`;
+            // === SUARA SALAH ===
+            playSoundEffect('salah');
+
+            feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> <strong>Oops!</strong> Jawabanmu kurang tepat.</div>`;
         }
     }
 
-    // Event Listener Tombol Utama
-    bankBtn.addEventListener('click', loadRandomGameFromBank);
-    randomBtn.addEventListener('click', generateRandomPattern);
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < gameSet.length) { 
+            displayQuestion();
+        } else {
+            showGameOver();
+        }
+    }
 
-    // Muat game acak (dari bank soal) saat halaman dibuka
-    loadRandomGameFromBank();
+    function showGameOver() {
+        gameBody.style.display = 'none';
+        document.querySelector('.card-header').style.display = 'none';
+        controlsFooter.style.display = 'none';
+        gameOverScreen.style.display = 'block';
+
+        // === SUARA MENANG (Game Selesai) ===
+        playSoundEffect('win');
+
+        const maxScore = gameSet.length * 10;
+        let evaluation = '';
+        
+        if (totalScore >= maxScore * 0.9) {
+            evaluation = 'Luar biasa! Kamu master pola!';
+        } else if (totalScore >= maxScore * 0.6) {
+            evaluation = 'Kerja bagus! Logikamu tajam.';
+        } else {
+            evaluation = 'Cukup bagus! Teruslah berlatih!';
+        }
+
+        finalScoreText.textContent = `Total Skor: ${totalScore} dari ${maxScore}`;
+        evaluationText.textContent = evaluation;
+    }
+
+    function showHint() {
+        const puzzle = gameSet[currentQuestionIndex];
+        supportBox.innerHTML = `<div class="alert alert-info animate-pop-in"><strong>Petunjuk:</strong> ${puzzle.hint}</div>`;
+    }
+    function showSolution() {
+        const puzzle = gameSet[currentQuestionIndex];
+        let solutionText = puzzle.solution || puzzle.next;
+        if (Array.isArray(puzzle.next)) {
+            solutionText = puzzle.solution || puzzle.next.join(' / ');
+        }
+        supportBox.innerHTML = `<div class="alert alert-warning animate-pop-in"><strong>Penyelesaian:</strong> ${solutionText}</div>`;
+    }
+
+    checkBtn.addEventListener('click', checkAnswer);
+    hintBtn.addEventListener('click', showHint);
+    solutionBtn.addEventListener('click', showSolution);
+    nextBtn.addEventListener('click', nextQuestion);
+    answerInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkBtn.click();
+        }
+    });
+
+    initGame();
 });
