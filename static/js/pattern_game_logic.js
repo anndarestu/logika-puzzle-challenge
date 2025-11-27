@@ -1,7 +1,12 @@
-// File: static/js/pattern_game_logic.js
-// (Logika BARU untuk mode 10 soal + skor)
-
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Fungsi Helper Suara
+    function playSoundEffect(type) {
+        if (typeof playSound === 'function') {
+            playSound(type);
+        }
+    }
+
     // === 1. DEKLARASI ELEMEN ===
     const scoreDisplay = document.getElementById('score-display');
     const questionCounter = document.getElementById('question-counter');
@@ -20,14 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const evaluationText = document.getElementById('evaluation-text');
 
     // === 2. STATE GAME ===
-    let gameSet = []; // 10 soal yang akan dimainkan
+    let gameSet = []; 
     let currentQuestionIndex = 0;
     let totalScore = 0;
     let isAnswered = false;
 
     // === 3. FUNGSI INTI GAME ===
 
-    // (A) Utility: Acak Array
     function shuffleArray(array) {
         let newArr = [...array];
         for (let i = newArr.length - 1; i > 0; i--) {
@@ -37,31 +41,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return newArr;
     }
 
-    // (B) Mulai Game (dipanggil pertama kali)
     function initGame() {
         if (typeof patternGames === 'undefined' || patternGames.length === 0) {
             questionText.textContent = 'Error: Gagal memuat bank soal pattern.';
             return;
         }
-        // Acak 10 soal dari bank soal (atau kurang jika bank soal < 10)
+        // Ambil 10 soal acak
         gameSet = shuffleArray(patternGames).slice(0, 10);
         
-        // Pastikan kita punya soal untuk dimainkan
         if (gameSet.length === 0) {
              questionText.textContent = 'Error: Tidak ada soal di gameSet.';
              return;
         }
-
         currentQuestionIndex = 0;
         totalScore = 0;
         displayQuestion();
     }
 
-    // (C) Tampilkan Soal
     function displayQuestion() {
         isAnswered = false;
         const puzzle = gameSet[currentQuestionIndex];
-
         questionText.innerHTML = `${puzzle.sequence.join(', ')}, <strong>?</strong>`;
         questionCounter.textContent = `${currentQuestionIndex + 1}`;
         scoreDisplay.textContent = totalScore;
@@ -74,17 +73,29 @@ document.addEventListener('DOMContentLoaded', () => {
         controlsFooter.style.display = 'none';
     }
 
-    // (D) Cek Jawaban
     function checkAnswer() {
         if (isAnswered) return;
 
         const puzzle = gameSet[currentQuestionIndex];
         const userAnswer = answerInput.value.trim().toLowerCase();
-        const correctAnswer = String(puzzle.next).toLowerCase();
 
         if (userAnswer === "") {
+            // SUARA SALAH (Input Kosong)
+            playSoundEffect('salah');
             feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> Jawaban tidak boleh kosong!</div>`;
             return;
+        }
+        
+        // Cek Jawaban 
+        const correctAnswerData = puzzle.next; 
+        let isCorrect = false;
+
+        if (Array.isArray(correctAnswerData)) {
+            const correctAnswers = correctAnswerData.map(ans => String(ans).toLowerCase());
+            isCorrect = correctAnswers.includes(userAnswer);
+        } else {
+            const correctAnswer = (correctAnswerData || '').toString().toLowerCase();
+            isCorrect = (userAnswer === correctAnswer);
         }
         
         isAnswered = true;
@@ -93,12 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
         controlsFooter.style.display = 'block';
         solutionBtn.style.display = 'inline-block';
 
-        if (userAnswer === correctAnswer) {
+        if (isCorrect) {
+            // === SUARA BENAR ===
+            playSoundEffect('benar');
+
             totalScore += 10;
             scoreDisplay.textContent = totalScore;
             feedbackBox.innerHTML = `<div class="feedback-box feedback-correct animate-pop-in"><i class="bi bi-check-circle-fill"></i> <strong>Benar!</strong> +10 Poin!</div>`;
             
-            // Trigger Achievement
             if (window.mathPuzzle) {
                 let progress = window.mathPuzzle.getProgress();
                 progress.solved_pattern += 1;
@@ -106,26 +119,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(progress.solved_pattern >= 1) window.mathPuzzle.unlockAchievement('PATTERN_1');
             }
         } else {
+            // === SUARA SALAH ===
+            playSoundEffect('salah');
+
             feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> <strong>Oops!</strong> Jawabanmu kurang tepat.</div>`;
         }
     }
 
-    // (E) Soal Selanjutnya
     function nextQuestion() {
         currentQuestionIndex++;
-        if (currentQuestionIndex < gameSet.length) { // Lanjut selama soal masih ada
+        if (currentQuestionIndex < gameSet.length) { 
             displayQuestion();
         } else {
             showGameOver();
         }
     }
 
-    // (F) Tampilkan Rekap Skor
     function showGameOver() {
         gameBody.style.display = 'none';
         document.querySelector('.card-header').style.display = 'none';
         controlsFooter.style.display = 'none';
         gameOverScreen.style.display = 'block';
+
+        // === SUARA MENANG (Game Selesai) ===
+        playSoundEffect('win');
 
         const maxScore = gameSet.length * 10;
         let evaluation = '';
@@ -142,17 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
         evaluationText.textContent = evaluation;
     }
 
-    // (G) Tombol Bantuan
     function showHint() {
         const puzzle = gameSet[currentQuestionIndex];
         supportBox.innerHTML = `<div class="alert alert-info animate-pop-in"><strong>Petunjuk:</strong> ${puzzle.hint}</div>`;
     }
     function showSolution() {
         const puzzle = gameSet[currentQuestionIndex];
-        supportBox.innerHTML = `<div class="alert alert-warning animate-pop-in"><strong>Penyelesaian:</strong> ${puzzle.solution || puzzle.next}</div>`;
+        let solutionText = puzzle.solution || puzzle.next;
+        if (Array.isArray(puzzle.next)) {
+            solutionText = puzzle.solution || puzzle.next.join(' / ');
+        }
+        supportBox.innerHTML = `<div class="alert alert-warning animate-pop-in"><strong>Penyelesaian:</strong> ${solutionText}</div>`;
     }
 
-    // === 4. EVENT LISTENERS ===
     checkBtn.addEventListener('click', checkAnswer);
     hintBtn.addEventListener('click', showHint);
     solutionBtn.addEventListener('click', showSolution);
@@ -163,6 +182,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Mulai Game!
     initGame();
 });
