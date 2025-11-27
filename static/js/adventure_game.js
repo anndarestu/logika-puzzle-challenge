@@ -1,6 +1,3 @@
-// File: static/js/adventure_game.js
-// (VERSI REVISI - BISA PILIH LEVEL)
-
 document.addEventListener('DOMContentLoaded', () => {
     // === 1. DEKLARASI ELEMEN ===
     const levelDisplay = document.getElementById('level-display');
@@ -65,23 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 3. STATE GAME ===
     let allPuzzles = {};
-    let gameSet = []; // 10 soal untuk level ini
-    let currentLevel = 'mudah'; // Default
+    let gameSet = [];
+    let currentLevel = 'mudah';
     let currentQuestionIndex = 0;
     let totalScore = 0;
     let isAnswered = false;
 
     // === 4. FUNGSI INTI GAME ===
 
-    // (A) Mulai Game (dipanggil pertama kali)
     async function initGame() {
-        // === PERUBAHAN #1: Membaca level dari URL ===
         const urlParams = new URLSearchParams(window.location.search);
         const requestedLevel = urlParams.get('level');
-        
-        // Validasi level, jika tidak ada atau salah, default ke 'mudah'
         currentLevel = (requestedLevel && ['mudah', 'sedang', 'sukar'].includes(requestedLevel)) ? requestedLevel : 'mudah';
-        // =============================================
 
         try {
             const response = await fetch('/api/get_adventure_puzzles');
@@ -91,39 +83,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 questionText.textContent = 'Error: Gagal memuat bank soal.';
                 return;
             }
-            
-            // === PERUBAHAN #2: Memulai level yang dipilih dari URL ===
             startLevel(currentLevel);
-            // ======================================================
-
         } catch (error) {
             console.error('Gagal mengambil data puzzle:', error);
             questionText.textContent = 'Gagal terhubung ke server. Coba lagi nanti.';
         }
     }
 
-    // (B) Memulai Level (HANYA SATU KALI)
     function startLevel(level) {
         currentLevel = level;
         currentQuestionIndex = 0;
 
-        // Acak 10 soal dari bank soal level tersebut
         const puzzlesForLevel = allPuzzles[level] || [];
-        gameSet = shuffleArray(puzzlesForLevel).slice(0, 10); // Ambil 10 soal
+        gameSet = shuffleArray(puzzlesForLevel).slice(0, 10);
 
-        // Tampilkan Info Level (Modal)
         const data = levelData[level];
         levelModalTitle.textContent = data.title;
         levelModalEmoji.textContent = data.emoji;
         levelModalStory.textContent = data.story;
-        levelDisplay.textContent = data.title; // Update header game
+        levelDisplay.textContent = data.title;
         levelIntroModal.show();
 
-        // Tampilkan soal pertama untuk level ini
         displayQuestion();
     }
 
-    // (C) Tampilkan Soal
     function displayQuestion() {
         isAnswered = false;
         const puzzle = gameSet[currentQuestionIndex];
@@ -140,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         controlsFooter.style.display = 'none';
     }
 
-    // (D) Cek Jawaban (Sesuai Kriteria)
     function checkAnswer() {
         if (isAnswered) return;
 
@@ -148,17 +130,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const userAnswer = answerInput.value.trim().toLowerCase();
 
         if (userAnswer === "") {
+            // SUARA SALAH (INPUT KOSONG)
+            if (typeof playSound === 'function') playSound('salah');
             feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> Jawaban tidak boleh kosong!</div>`;
             return;
         }
+
+        // Cek jawaban 
         const correctAnswerData = puzzle.simple_answer;
         let isCorrect = false;
-        
         if (Array.isArray(correctAnswerData)) {
             const correctAnswers = correctAnswerData.map(ans => String(ans).toLowerCase());
             isCorrect = correctAnswers.includes(userAnswer);
         } else {
-            const correctAnswer = (correctAnswerData || '').trim().toLowerCase();
+            const correctAnswer = (correctAnswerData || '').toString().toLowerCase();
             isCorrect = (userAnswer === correctAnswer);
         }
 
@@ -170,8 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
         solutionBtn.style.display = 'inline-block'; 
 
         if (isCorrect) {
+            // === SUARA BENAR ===
+            if (typeof playSound === 'function') playSound('benar');
+
             totalScore += 10;
-            scoreDisplay.textContent = totalScore; // Update skor
+            scoreDisplay.textContent = totalScore;
             feedbackBox.innerHTML = `<div class="feedback-box feedback-correct animate-pop-in"><i class="bi bi-check-circle-fill"></i> <strong>Benar!</strong> +10 Poin!</div>`;
 
             if (window.mathPuzzle) {
@@ -182,54 +170,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (progress.solved_logic >= 5) window.mathPuzzle.unlockAchievement('LOGIC_5');
             }
         } else {
-            feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> <strong>Oops!</strong> Jawabanmu kurang tepat. (0 Poin)</div>`;
+            // === SUARA SALAH ===
+            if (typeof playSound === 'function') playSound('salah');
+            
+            feedbackBox.innerHTML = `<div class="feedback-box feedback-incorrect animate-shake"><i class="bi bi-x-circle-fill"></i> <strong>Oops!</strong> Jawabanmu kurang tepat.</div>`;
         }
     }
 
-    // (E) Soal Selanjutnya
     function nextQuestion() {
         currentQuestionIndex++;
-        
-        // === PERUBAHAN #3: Logika Pindah Level Dihapus ===
-        if (currentQuestionIndex < 10) { // Main 10 soal
+        if (currentQuestionIndex < 10) { 
             displayQuestion();
         } else {
-            // Level Selesai! Langsung tampilkan Game Over.
             showGameOver();
         }
-        // ===============================================
     }
 
-    // (F) Tampilkan Rekap Skor (Sesuai Kriteria)
     function showGameOver() {
         gameBody.style.display = 'none';
         document.querySelector('.card-header').style.display = 'none';
         controlsFooter.style.display = 'none';
         gameOverScreen.style.display = 'block';
 
-        // === PERUBAHAN #4: Kriteria Skor diubah jadi 100 ===
+        // === SUARA MENANG (GAME OVER) ===
+        if (typeof playSound === 'function') playSound('win');
+
         let finalData, finalEmoji;
-        if (totalScore >= 90) { // 9-10 Benar
+        if (totalScore >= 90) {
             finalData = endingData['🥇'];
             finalEmoji = '🥇';
-        } else if (totalScore >= 60) { // 6-8 Benar
+        } else if (totalScore >= 60) {
             finalData = endingData['🥈'];
             finalEmoji = '🥈';
-        } else { // < 6 Benar
+        } else {
             finalData = endingData['🥉'];
             finalEmoji = '🥉';
         }
-        // =================================================
 
         finalTitleText.textContent = finalData.title;
         finalEmojiText.textContent = finalEmoji;
-        // === PERUBAHAN #5: Skor diubah dari 300 jadi 100 ===
         finalScoreText.textContent = `Total Skor: ${totalScore} dari 100`;
-        // =================================================
         evaluationText.textContent = finalData.evaluation;
     }
 
-    // (G) Tombol Bantuan
     function showHint() {
         const puzzle = gameSet[currentQuestionIndex];
         supportBox.innerHTML = `<div class="alert alert-info animate-pop-in"><strong>Petunjuk:</strong> ${puzzle.hint}</div>`;
@@ -239,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         supportBox.innerHTML = `<div class="alert alert-warning animate-pop-in"><strong>Penyelesaian:</strong> ${puzzle.solution || puzzle.simple_answer}</div>`;
     }
 
-    // (H) Utility: Acak Array
     function shuffleArray(array) {
         let newArr = [...array];
         for (let i = newArr.length - 1; i > 0; i--) {
@@ -249,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return newArr;
     }
 
-    // === 5. EVENT LISTENERS ===
     checkBtn.addEventListener('click', checkAnswer);
     hintBtn.addEventListener('click', showHint);
     solutionBtn.addEventListener('click', showSolution);
@@ -260,6 +241,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Mulai Game!
     initGame();
 });
